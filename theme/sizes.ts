@@ -1,0 +1,26 @@
+import { moderateScale } from 'react-native-size-matters';
+
+export const Sizes = {
+  6: moderateScale(6),
+  16: moderateScale(16),
+  18: moderateScale(18),
+  20: moderateScale(20),
+  22: moderateScale(22),
+  24: moderateScale(24),
+  28: moderateScale(28),
+  40: moderateScale(40),
+  48: moderateScale(48),
+  56: moderateScale(56),
+  76: moderateScale(76),
+  80: moderateScale(80),
+  88: moderateScale(88),
+  100: moderateScale(100),
+  112: moderateScale(112),
+  120: moderateScale(120),
+  140: moderateScale(140),
+  178: moderateScale(178),
+  200: moderateScale(200),
+  220: moderateScale(220),
+  280: moderateScale(280),
+  290: moderateScale(290),
+} as const;

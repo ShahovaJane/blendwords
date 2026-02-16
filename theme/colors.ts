@@ -1,0 +1,16 @@
+export const Colors = {
+  text: '#fff',
+  link: 'rgba(255,255,255,0.68)',
+  background: 'rgba(255,255,255,0.1)',
+  tint: '#504b6d',
+  borderTint: '#413c5b',
+  icon: '#687076',
+  tabIconDefault: '#687076',
+  tabIconSelected: '#504b6d',
+  card: 'rgba(255,255,255,0.9)',
+  cardTitle: '#687076',
+  cardText: '#504b6d',
+  error: '#961005',
+  outlineButton: '#fff',
+  modalBg: 'rgba(0,0,0,0.6)',
+};
