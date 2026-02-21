@@ -14,6 +14,8 @@ import Animated, {
 
 import { ThemedText } from '@/components/themed-text';
 
+import { SHARED_TRANSITION_TAGS } from '@/constants/shared-transition';
+
 import { BorderRadius } from '@/theme/border-radius';
 import { Colors } from '@/theme/colors';
 import { FontSizes } from '@/theme/font-sizes';
@@ -201,7 +203,10 @@ export const BlendLoadingView = memo(function ({
           </ThemedText>
         </Animated.View>
 
-        <Animated.View style={[styles.orb, styles.orbRight, orb2Style]}>
+        <Animated.View
+          style={[styles.orb, styles.orbRight, orb2Style]}
+          sharedTransitionTag={SHARED_TRANSITION_TAGS.LOADING}
+        >
           <ThemedText style={styles.orbLabel} numberOfLines={1}>
             {truncateForOrb(text2Preview)}
           </ThemedText>

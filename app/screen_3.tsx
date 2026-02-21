@@ -1,7 +1,12 @@
 import { useCallback } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import * as Haptics from 'expo-haptics';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import {
+  useNavigation,
+  useRoute,
+  type RouteProp,
+} from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { Card } from '@/components/card';
 import { SharedScreenLayout } from '@/components/shared-screen-layout';
@@ -12,7 +17,7 @@ import {
   BLEND_MODE_LABELS,
   type BlendMode,
 } from '@/constants/blend-modes';
-import { ROUTES } from '@/constants/routes';
+import { ROUTES, type RootStackParamList } from '@/constants/routes';
 
 import { Colors } from '@/theme/colors';
 import { FontSizes } from '@/theme/font-sizes';
@@ -28,31 +33,33 @@ const BLEND_MODES: BlendMode[] = [
   'poetry',
 ];
 
+type Screen3RouteProp = RouteProp<RootStackParamList, typeof ROUTES.SCREEN_3>;
+type Screen3NavProp = NativeStackNavigationProp<
+  RootStackParamList,
+  typeof ROUTES.SCREEN_3
+>;
+
 export default function ModePickerScreen() {
-  const { text1 = '', text2 = '' } = useLocalSearchParams<{
-    text1?: string;
-    text2?: string;
-  }>();
-  const router = useRouter();
+  const { params } = useRoute<Screen3RouteProp>();
+  const navigation = useNavigation<Screen3NavProp>();
+  const text1 = params?.text1 ?? '';
+  const text2 = params?.text2 ?? '';
 
   const handleSelectMode = useCallback(
     (mode: BlendMode) => {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-      router.push({
-        pathname: `/${ROUTES.SCREEN_4}`,
-        params: {
-          text1: trim(text1),
-          text2: trim(text2),
-          mode,
-        },
+      navigation.push(ROUTES.SCREEN_4, {
+        text1: trim(text1),
+        text2: trim(text2),
+        mode,
       });
     },
-    [router, text1, text2]
+    [navigation, text1, text2]
   );
 
   const handleBack = useCallback(() => {
-    router.back();
-  }, [router]);
+    navigation.goBack();
+  }, [navigation]);
 
   const t1 = trim(text1);
   const t2 = trim(text2);

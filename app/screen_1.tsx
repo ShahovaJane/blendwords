@@ -1,55 +1,93 @@
-import { useCallback, useState } from 'react';
-import { KeyboardAvoidingView, Platform, StyleSheet, View } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useCallback, useEffect, useRef } from 'react';
+import {
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+  TextInput,
+  View,
+} from 'react-native';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
+import { useIsFocused, useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import { BlendTextInput } from '@/components/text-input';
+import { stylesInput } from '@/components/text-input';
 import { Button } from '@/components/button';
-import { SavingText1Modal } from '@/components/saving-text1-modal';
 import { SharedScreenLayout } from '@/components/shared-screen-layout';
 import { StoredConfirmationRow } from '@/components/stored-confirmation-row';
 import { ThemedText } from '@/components/themed-text';
 import { VoiceInputButton } from '@/components/voice-input-button';
 
-import { ROUTES } from '@/constants/routes';
+import { ROUTES, type RootStackParamList } from '@/constants/routes';
+import { SHARED_TRANSITION_TAGS } from '@/constants/shared-transition';
 
 import { useVoiceInput } from '@/hooks/use-voice-input';
+import { useVoiceTypingText } from '@/hooks/use-voice-typing-text';
 
+import { Colors } from '@/theme/colors';
 import { Sizes } from '@/theme/sizes';
 import { Spacing } from '@/theme/spacing';
 
 import { trim } from '@/utils/trim';
 
+type Screen1NavProp = NativeStackNavigationProp<
+  RootStackParamList,
+  typeof ROUTES.SCREEN_1
+>;
+
+const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
+
 export default function Screen1() {
-  const router = useRouter();
-  const [text, setText] = useState('');
-  const [savingModalVisible, setSavingModalVisible] = useState(false);
+  const navigation = useNavigation<Screen1NavProp>();
+  const isFocused = useIsFocused();
+  const voiceTyping = useVoiceTypingText('');
+  const { value: textValue, text, onChangeText, appendFromVoice } = voiceTyping;
   const voice = useVoiceInput();
+  const returnProgress = useSharedValue(1);
+  const wasBlurredRef = useRef(false);
 
   const hasText = trim(text).length > 0;
+  const handleTranscription = useCallback(
+    (transcribed: string) => appendFromVoice(transcribed),
+    [appendFromVoice]
+  );
 
-  const handleTranscription = useCallback((transcribed: string) => {
-    setText((prev) => (prev ? prev + ' ' + transcribed : transcribed));
-  }, []);
+  useEffect(() => {
+    if (!isFocused) {
+      wasBlurredRef.current = true;
+      returnProgress.value = 0;
+    }
+  }, [isFocused, returnProgress]);
+
+  useEffect(() => {
+    if (isFocused && wasBlurredRef.current && hasText) {
+      wasBlurredRef.current = false;
+      returnProgress.value = withTiming(1, {
+        duration: 0,
+      });
+    } else if (isFocused && !hasText) {
+      returnProgress.value = 1;
+    }
+  }, [isFocused, hasText, returnProgress]);
+
+  const inputAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: returnProgress.value,
+  }));
 
   const navigateToScreen2 = useCallback(
     (text1Value: string) => {
-      router.push({
-        pathname: `/${ROUTES.SCREEN_2}`,
-        params: { text1: text1Value },
-      });
+      navigation.push(ROUTES.SCREEN_2, { text1: text1Value });
     },
-    [router]
+    [navigation]
   );
 
   const handleContinue = useCallback(() => {
     if (!hasText) return;
-    setSavingModalVisible(true);
-  }, [hasText]);
-
-  const handleSavingComplete = useCallback(() => {
-    setSavingModalVisible(false);
     navigateToScreen2(trim(text));
-  }, [navigateToScreen2, text]);
+  }, [hasText, navigateToScreen2, text]);
 
   return (
     <SharedScreenLayout title="Text 1">
@@ -69,13 +107,16 @@ export default function Screen1() {
             onTranscription={handleTranscription}
           />
 
-          <BlendTextInput
+          <AnimatedTextInput
             placeholder="Enter your first piece of text..."
-            value={text}
-            onChangeText={setText}
+            placeholderTextColor={Colors.text}
+            value={textValue}
+            onChangeText={onChangeText}
             multiline
             textAlignVertical="top"
             maxLength={1000}
+            style={[stylesInput.input, inputAnimatedStyle]}
+            sharedTransitionTag={SHARED_TRANSITION_TAGS.INPUT}
           />
 
           {hasText && <StoredConfirmationRow />}
@@ -88,10 +129,6 @@ export default function Screen1() {
           />
         </KeyboardAvoidingView>
       </View>
-      <SavingText1Modal
-        visible={savingModalVisible}
-        onComplete={handleSavingComplete}
-      />
     </SharedScreenLayout>
   );
 }

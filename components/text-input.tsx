@@ -20,20 +20,14 @@ export const BlendTextInput = memo(function ({
   return (
     <TextInput
       {...rest}
-      style={[styles.input, style]}
+      style={[stylesInput.input, style]}
       placeholderTextColor={placeholderTextColor}
     />
   );
 });
 BlendTextInput.displayName = 'BlendTextInput';
 
-const styles = StyleSheet.create({
-  container: {
-    borderRadius: BorderRadius[12],
-    padding: Spacing[4],
-    minHeight: Sizes[220],
-    maxHeight: Sizes[290],
-  },
+export const stylesInput = StyleSheet.create({
   input: {
     flex: 1,
     minHeight: Sizes[200],
